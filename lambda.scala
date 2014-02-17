@@ -96,7 +96,7 @@ def print_and_normalise(m: LTerm) : Unit = {
     
 
 // Parse and print input
-var t = LambdaParsers.parseExpr(args(0))
+val t = LambdaParsers.parseExpr(args(0))
 println("    " + t.toString())
 
 // This is necessary to avoid printing the beta-reduction arrow in front
