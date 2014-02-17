@@ -40,6 +40,7 @@ def bound_vars(t: LTerm) : Set[LVariable] = t match {
 }
 
 def fresh() : LVariable = {
+  // TODO: implement this
   LVariable('f')
 }
 
@@ -65,4 +66,20 @@ def substitute(m: LTerm, x: LVariable, n: LTerm) : LTerm = m match {
   case LApplication(p, q) => LApplication(substitute(p, x, n), substitute(q, x, n))
 }
 
-println(LambdaParsers.parseExpr("Lx.(x x)"))
+def reduce(m: LTerm) : LTerm = m match {
+  case LApplication(LAbstraction(v, p), n) => substitute(p, v, n)
+  case LVariable(_) => m
+  case LAbstraction(v, m) => LAbstraction(v, reduce(m))
+  case LApplication(m, n) => {
+    val red_m = reduce(m)
+
+    // Only reduce n if there was no redex in m
+    if (red_m != m)
+      LApplication(red_m, n)
+    else
+      LApplication(m, reduce(n))
+  }
+}
+
+val t = LambdaParsers.parseExpr("((Lx.x y) (Lx.x y))")
+println(reduce(t))
