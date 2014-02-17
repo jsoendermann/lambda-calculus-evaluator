@@ -1,6 +1,5 @@
 import scala.util.parsing.combinator._
 
-// ######## AST #########
 abstract class LTerm
 
 case class LVariable(c: Char) extends LTerm { override def toString() = { c.toString() }}
@@ -8,11 +7,10 @@ case class LAbstraction(v: LVariable, m: LTerm) extends LTerm { override def toS
 case class LApplication(m: LTerm, n: LTerm) extends LTerm { override def toString() = { "(" + m.toString() + " " + n.toString() +")" }}
 
 
-// ######## Parser #########
 object LambdaParsers extends JavaTokenParsers {
   def term: Parser[LTerm] = variable | abstraction | application
 
-  def variable: Parser[LVariable] = """[a-z]""".r ^^ {s => (LVariable(s.head))}
+  def variable: Parser[LVariable] = """[n-z]""".r ^^ {s => (LVariable(s.head))}
 
   def abstraction: Parser[LAbstraction] = "L"~>variable~"."~term ^^ {
     case v~"."~m => LAbstraction(v, m)
@@ -26,7 +24,6 @@ object LambdaParsers extends JavaTokenParsers {
 }
 
 
-// ######### functions ##########
 def free_vars(t: LTerm) : Set[LVariable] = t match {
   case LVariable(c) => Set(LVariable(c))
   case LAbstraction(v, m) => free_vars(m) -- Set(v)
@@ -39,9 +36,10 @@ def bound_vars(t: LTerm) : Set[LVariable] = t match {
   case LApplication(m, n) => bound_vars(m) ++ bound_vars(n)
 }
 
+var counter = 'a' - 1
 def fresh() : LVariable = {
-  // TODO: implement this
-  LVariable('f')
+  counter += 1
+  LVariable(counter.toChar)
 }
 
 def substitute(m: LTerm, x: LVariable, n: LTerm) : LTerm = m match {
@@ -66,6 +64,7 @@ def substitute(m: LTerm, x: LVariable, n: LTerm) : LTerm = m match {
   case LApplication(p, q) => LApplication(substitute(p, x, n), substitute(q, x, n))
 }
 
+// Leftmost-outermost reduction
 def reduce(m: LTerm) : LTerm = m match {
   case LApplication(LAbstraction(v, p), n) => substitute(p, v, n)
   case LVariable(_) => m
@@ -81,5 +80,25 @@ def reduce(m: LTerm) : LTerm = m match {
   }
 }
 
-val t = LambdaParsers.parseExpr("((Lx.x y) (Lx.x y))")
-println(reduce(t))
+def is_in_normal_form(m: LTerm) : Boolean = m match {
+  case LApplication(LAbstraction(_, _), _) => false
+  case LVariable(_) => true
+  case LAbstraction(_, m) => is_in_normal_form(m)
+  case LApplication(m, n) => is_in_normal_form(m) && is_in_normal_form(n)
+}
+
+def print_and_normalise(m: LTerm) : Unit = {
+  println("->β " + m)
+  if (!is_in_normal_form(m)) 
+    print_and_normalise(reduce(m))
+}
+    
+
+// Parse and print input
+var t = LambdaParsers.parseExpr(args(0))
+println("    " + t.toString())
+
+// This is necessary to avoid printing the beta-reduction arrow in front
+// of the original term.
+if (!is_in_normal_form(t)) 
+  print_and_normalise(reduce(t))
