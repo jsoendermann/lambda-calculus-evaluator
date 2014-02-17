@@ -10,7 +10,7 @@ case class LApplication(m: LTerm, n: LTerm) extends LTerm { override def toStrin
 object LambdaParsers extends JavaTokenParsers {
   def term: Parser[LTerm] = variable | abstraction | application
 
-  def variable: Parser[LVariable] = """[n-z]""".r ^^ {s => (LVariable(s.head))}
+  def variable: Parser[LVariable] = """[a-z]""".r ^^ {s => (LVariable(s.head))}
 
   def abstraction: Parser[LAbstraction] = "L"~>variable~"."~term ^^ {
     case v~"."~m => LAbstraction(v, m)
@@ -36,7 +36,8 @@ def bound_vars(t: LTerm) : Set[LVariable] = t match {
   case LApplication(m, n) => bound_vars(m) ++ bound_vars(n)
 }
 
-var counter = 'a' - 1
+// Fresh vars start at 'n'
+var counter = 'n' - 1
 def fresh() : LVariable = {
   counter += 1
   LVariable(counter.toChar)
