@@ -1,3 +1,3 @@
-To try this out by adding 1 and 3 run
+To run, execute:
 
-    JAVA_OPTS="-Dfile.encoding=utf8" scala lambda.scala "((Lx.Ly.La.Lb.((x a) ((y a) b)) Lx.Ly.(x y)) Lx.Ly.(x (x (x y))))"
+    JAVA_OPTS="-Dfile.encoding=utf8" scala lambda.scala
