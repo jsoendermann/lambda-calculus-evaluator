@@ -133,6 +133,7 @@ def print_and_normalise(m: LTerm, counter: Int) : Unit = {
 
 
 println("Ready!")
+print("> ")
 
 while (true) {
   val line = scala.io.StdIn.readLine()
@@ -153,6 +154,6 @@ while (true) {
     }
   }
 
-  println()
+  print("> ")
 }
 
