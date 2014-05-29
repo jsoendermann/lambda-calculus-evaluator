@@ -226,6 +226,7 @@ while (true) {
     }
   }
 
+  println()
   print("> ")
 }
 
