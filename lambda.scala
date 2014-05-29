@@ -18,7 +18,27 @@ def expression_to_string(e: LExpression) : String = e match {
       "λ" + expression_to_string(v) + "." + expression_to_string(m)
     }
   }
-  case LApplication(m, n) => "(" + expression_to_string(m) + " " + expression_to_string(n) +")"
+  case LApplication(m, n) => {
+    var output = ""
+
+    if (m.isInstanceOf[LApplication]) {
+      output += inner_application_to_string(m.asInstanceOf[LApplication])
+    } else if (m.isInstanceOf[LAbstraction]) {
+      output += "(" + expression_to_string(m) + ")"
+    } else {
+      output += expression_to_string(m)
+    }
+
+    output += " "
+
+    if (n.isInstanceOf[LVariable] || n.isInstanceOf[LCapVar]) {
+      output += expression_to_string(n)
+    } else {
+      output += "(" + expression_to_string(n) + ")"
+    }
+    
+    output
+  }
   case LCapVar(c) => c.toString()
 }
 
@@ -28,6 +48,28 @@ def inner_abstraction_to_string(a: LAbstraction) : String = {
   } else {
     expression_to_string(a.v) + "." + expression_to_string(a.m)
   }
+}
+
+def inner_application_to_string(a: LApplication) : String = {
+  var output = ""
+
+  if (a.m.isInstanceOf[LApplication]) {
+    output += inner_application_to_string(a.m.asInstanceOf[LApplication])
+  } else if (a.m.isInstanceOf[LAbstraction]) {
+    output += "(" + expression_to_string(a.m) + ")"
+  } else {
+    output += expression_to_string(a.m)
+  }
+
+  output += " "
+
+  if (a.n.isInstanceOf[LVariable] || a.n.isInstanceOf[LCapVar]) {
+    output += expression_to_string(a.n)
+  } else {
+    output += "(" + expression_to_string(a.n) + ")"
+  }
+
+  output
 }
 
 
