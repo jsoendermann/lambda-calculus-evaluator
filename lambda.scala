@@ -1,12 +1,34 @@
 import scala.util.parsing.combinator._
 
 abstract class LExpression
-case class LCapVarDef(c: Char, e: LTerm) extends LExpression { override def toString() = { c.toString() + " = " + e.toString() }}
+case class LCapVarDef(c: Char, e: LTerm) extends LExpression
 abstract class LTerm extends LExpression
-case class LVariable(c: Char) extends LTerm { override def toString() = { c.toString() }}
-case class LAbstraction(v: LVariable, m: LTerm) extends LTerm { override def toString() = { "λ" + v + "." + m.toString() }}
-case class LApplication(m: LTerm, n: LTerm) extends LTerm { override def toString() = { "(" + m.toString() + " " + n.toString() +")" }}
-case class LCapVar(c: Char) extends LTerm { override def toString() = { c.toString() }}
+case class LVariable(c: Char) extends LTerm
+case class LAbstraction(v: LVariable, m: LTerm) extends LTerm
+case class LApplication(m: LTerm, n: LTerm) extends LTerm
+case class LCapVar(c: Char) extends LTerm
+
+def expression_to_string(e: LExpression) : String = e match {
+  case LCapVarDef(c, e) => c.toString() + " = " + expression_to_string(e)
+  case LVariable(c) => c.toString()
+  case LAbstraction(v, m) => {
+    if (m.isInstanceOf[LAbstraction]) {
+      "λ" + expression_to_string(v) + inner_abstraction_to_string(m.asInstanceOf[LAbstraction])
+    } else {
+      "λ" + expression_to_string(v) + "." + expression_to_string(m)
+    }
+  }
+  case LApplication(m, n) => "(" + expression_to_string(m) + " " + expression_to_string(n) +")"
+  case LCapVar(c) => c.toString()
+}
+
+def inner_abstraction_to_string(a: LAbstraction) : String = {
+  if (a.m.isInstanceOf[LAbstraction]) {
+    expression_to_string(a.v) + inner_abstraction_to_string(a.m.asInstanceOf[LAbstraction])
+  } else {
+    expression_to_string(a.v) + "." + expression_to_string(a.m)
+  }
+}
 
 
 object LambdaParsers extends JavaTokenParsers {
@@ -125,7 +147,7 @@ def print_and_normalise(m: LTerm, counter: Int) : Unit = {
   if (counter <= 0) {
     println("...")
   } else {
-    println("->β " + m)
+    println("->β " + expression_to_string(m))
     if (!is_in_normal_form(m)) 
       print_and_normalise(reduce(m), counter - 1)
   }
@@ -150,12 +172,12 @@ while (true) {
   expr match {
     case LCapVarDef(c, t) => {
       capVarMap = capVarMap ++ Map(c -> t)
-      println(expr)
+      println(expression_to_string(expr))
     }
     case _ => {
       val term = expr.asInstanceOf[LTerm]
 
-      println(term.toString())
+      println(expression_to_string(term))
       if (!is_in_normal_form(term)) 
         print_and_normalise(reduce(term), 100)
     }
