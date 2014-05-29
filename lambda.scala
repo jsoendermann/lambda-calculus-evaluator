@@ -90,8 +90,8 @@ object LambdaParsers extends JavaTokenParsers {
     }
   }
 
-  def application: Parser[LApplication] = "("~>term~term<~")" ^^ {
-    case m~n => LApplication(m, n)
+  def application: Parser[LApplication] = "("~>term~rep1(term)<~")" ^^ {
+    case m~ns => ns.tail.foldLeft(LApplication(m, ns(0))){case (l, r) => LApplication(l, r)}
   }
 
   def capVar: Parser[LCapVar] = """[A-Z]""".r ^^ {s => LCapVar(s.head)}
