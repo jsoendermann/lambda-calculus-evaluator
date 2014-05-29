@@ -20,8 +20,10 @@ object LambdaParsers extends JavaTokenParsers {
 
   def variable: Parser[LVariable] = """[a-z]""".r ^^ {s => (LVariable(s.head))}
 
-  def abstraction: Parser[LAbstraction] = "L"~>variable~"."~term ^^ {
-    case v~"."~m => LAbstraction(v, m)
+  def abstraction: Parser[LAbstraction] = "L"~>rep1(variable)~"."~term ^^ {
+    case vs~"."~m => {
+      vs.init.foldRight(LAbstraction(vs.last, m)){case (v, b) => LAbstraction(v, b)}
+    }
   }
 
   def application: Parser[LApplication] = "("~>term~term<~")" ^^ {
