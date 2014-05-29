@@ -140,6 +140,11 @@ print("> ")
 while (true) {
   val line = scala.io.StdIn.readLine()
 
+  if (line == null) {
+    println()
+    System.exit(0)
+  }
+
   val expr = LambdaParsers.parseExpr(line)
 
   expr match {
