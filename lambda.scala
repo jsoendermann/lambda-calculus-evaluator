@@ -18,6 +18,7 @@ def expression_to_string(e: LExpression) : String = e match {
       "λ" + expression_to_string(v) + "." + expression_to_string(m)
     }
   }
+  // TODO refactor this (extract duplicated code from this case and inner_application_to_string function)
   case LApplication(m, n) => {
     var output = ""
 
